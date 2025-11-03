@@ -19,3 +19,11 @@ func (r *UserRepository) Create(ctx context.Context, u domain.User) error {
 		Password: u.Password,
 	})
 }
+func (r *UserRepository) UpdateUserInfo(ctx context.Context, u domain.EditUserInfo) error {
+	return r.dao.Update(ctx, dao.User{
+		Nickname:    u.Nickname,
+		Birthday:    u.Birthday,
+		Description: u.Description,
+	})
+
+}

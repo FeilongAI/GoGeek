@@ -17,3 +17,6 @@ func NewUserService(repo *repostitory.UserRepository) *UserService {
 func (svc *UserService) SignUp(ctx context.Context, u domain.User) error {
 	return svc.repo.Create(ctx, u)
 }
+func (svc *UserService) Edit(ctx context.Context, u domain.EditUserInfo) error {
+	return svc.repo.UpdateUserInfo(ctx, u)
+}

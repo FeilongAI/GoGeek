@@ -21,11 +21,19 @@ func (dao *UserDao) Insert(ctx context.Context, u User) error {
 	u.Utime = now
 	return dao.db.Create(&u).Error
 }
+func (dao *UserDao) Update(ctx context.Context, u User) error {
+	now := time.Now().UnixMilli()
+	u.Ctime = now
+	return dao.db.Model(&User{}).Where("id = ?", u.Id).UpdateColumns(&u).Error
+}
 
 type User struct {
-	Id       int64  `gorm:"primary_key,auto_increment"`
-	Email    string `gorm:"unique"`
-	Password string
-	Ctime    int64
-	Utime    int64
+	Id          int64  `gorm:"primary_key,auto_increment"`
+	Email       string `gorm:"unique"`
+	Nickname    string
+	Birthday    time.Time
+	Description string
+	Password    string
+	Ctime       int64
+	Utime       int64
 }

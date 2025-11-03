@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
+	"time"
 )
 
 type UserHandler struct {
@@ -64,8 +65,27 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 	}
 
 }
-func (u *UserHandler) Login(c *gin.Context)   {}
-func (u *UserHandler) Edit(c *gin.Context)    {}
+func (u *UserHandler) Login(c *gin.Context) {}
+func (u *UserHandler) Edit(c *gin.Context) {
+	type EditReq struct {
+		Nickname    string `json:"nickname"`
+		Birthday    string `json:"birthday"`
+		Description string `json:"description"`
+	}
+	var req EditReq
+	if err := c.ShouldBind(&req); err != nil {
+		return
+	}
+	birthday, err := time.Parse("2006-01-02", req.Birthday)
+	if err != nil {
+		c.String(http.StatusOK, "生日日期有误")
+	}
+	u.svc.Edit(c, domain.EditUserInfo{
+		Nickname:    req.Nickname,
+		Birthday:    birthday,
+		Description: req.Description,
+	})
+}
 func (u *UserHandler) Profile(c *gin.Context) {}
 
 /*
@@ -80,7 +100,7 @@ func (u *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug := server.Group("/users")
 	ug.POST("/signup", u.SignUp)
 	ug.POST("/login", u.Login)
-	ug.POST("/edit", u.Edit)
+	ug.POST("/edit/:id", u.Edit)
 	ug.GET("/profile", u.Profile)
 }
 func (u *UserHandler) RegisterRoutesV1(ug *gin.RouterGroup) {
