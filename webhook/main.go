@@ -5,7 +5,10 @@ import (
 	dao "github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/repostitory/dao"
 	"github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/service"
 	"github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/web"
+	"github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/web/middleware"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -57,6 +60,12 @@ func initWebServer() *gin.Engine {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+	store := cookie.NewStore([]byte("secret"))
+	server.Use(sessions.Sessions("mysession", store))
+	server.Use(middleware.NewLoginMiddleWareBuilder().
+		IgnorePath("/user/signup").
+		IgnorePath("/users/login").
+		Build())
 
 	return server
 }

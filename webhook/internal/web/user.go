@@ -3,6 +3,7 @@ package web
 import (
 	"github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/domain"
 	"github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/service"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
@@ -60,12 +61,49 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 		Email:    req.Email,
 		Password: req.Password,
 	})
+	if err == service.ErrUserDuplicate {
+		ctx.String(http.StatusOK, "邮箱冲突")
+	}
 	if err != nil {
 		ctx.String(http.StatusOK, "系统错误")
 	}
+	ctx.JSON(http.StatusOK, "注册成功")
+	return
 
 }
-func (u *UserHandler) Login(c *gin.Context) {}
+func (u *UserHandler) Login(c *gin.Context) {
+
+	type LoginReq struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	var req LoginReq
+	if err := c.ShouldBind(&req); err != nil {
+		return
+	}
+	user, err := u.svc.Login(c, domain.User{
+		Email:    req.Email,
+		Password: req.Password,
+	})
+	if err == service.ErrInvalidUserOrPassword {
+		c.JSON(http.StatusOK, "账号或密码错误")
+		return
+	}
+	if err != nil {
+		c.String(http.StatusOK, "系统错误")
+		return
+	}
+
+	// 先设置session
+	sess := sessions.Default(c)
+	sess.Set("userId", user.Id)
+	sess.Save()
+
+	// 再返回响应
+	c.String(http.StatusOK, "登录成功")
+	return
+
+}
 func (u *UserHandler) Edit(c *gin.Context) {
 	type EditReq struct {
 		Nickname    string `json:"nickname"`

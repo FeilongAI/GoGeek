@@ -4,7 +4,11 @@ import (
 	"context"
 	"github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/domain"
 	"github.com/FeilongAI/GoGeek/baisic-go/webhook/internal/repostitory/dao"
+	"github.com/gin-gonic/gin"
 )
+
+var ErrUserDuplicate = dao.ErrUserDuplicate
+var ErrUserNotFound = dao.ErrUserNotFound
 
 type UserRepository struct {
 	dao *dao.UserDao
@@ -26,4 +30,16 @@ func (r *UserRepository) UpdateUserInfo(ctx context.Context, u domain.EditUserIn
 		Description: u.Description,
 	})
 
+}
+
+func (r *UserRepository) FindByEmail(c *gin.Context, email string) (domain.User, error) {
+	u, err := r.dao.FindByEmail(c, email)
+	if err != nil {
+		return domain.User{}, err
+	}
+	return domain.User{
+		Id:       u.Id,
+		Email:    u.Email,
+		Password: u.Password,
+	}, nil
 }
